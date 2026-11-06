@@ -1,0 +1,27 @@
+BasedOnStyle: LLVM
+IndentWidth: 4
+ContinuationIndentWidth: 4
+AlignAfterOpenBracket: DontAlign
+ColumnLimit: 100
+BreakBeforeBraces: Attach
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+SeparateDefinitionBlocks: Always
+SortIncludes: Never
+SpaceBeforeParens: ControlStatements
+SpacesInSquareBrackets: false
+---
+Language: Java
+BasedOnStyle: Google
+IndentWidth: 2
+ContinuationIndentWidth: 2
+AlignAfterOpenBracket: DontAlign
+ColumnLimit: 100
+BreakBeforeBraces: Attach
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+SeparateDefinitionBlocks: Always
+SortIncludes: Never
+SpaceBeforeParens: ControlStatements

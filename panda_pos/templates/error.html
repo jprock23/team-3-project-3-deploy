@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block body_class %}centered{% endblock %}
+{% block content %}
+<div class="card dialog">
+  <h2>Can't reach the database</h2>
+  <p class="muted">Check config.py (or the PANDA_DB_* environment variables) and that you're on the TAMU network/VPN.</p>
+  <pre class="err">{{ message }}</pre>
+  <div class="actions"><a class="btn btn-primary" href="{{ request.url }}">Retry</a></div>
+</div>
+{% endblock %}

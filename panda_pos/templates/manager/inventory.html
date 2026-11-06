@@ -1,0 +1,33 @@
+{% extends "manager/base.html" %}
+{% from "manager/_editable.html" import editable_table, value_cell %}
+{% block content %}
+<div class="page">
+  <div class="page-top">
+    <h2>Inventory</h2>
+    <div class="actions">
+      <a class="btn btn-secondary" href="{{ url_for('inventory_reactivate') }}">Reactivate Item</a>
+      <a class="btn btn-secondary" href="{{ url_for('inventory_add') }}">+ Add Item</a>
+    </div>
+  </div>
+  {% call editable_table(url_for('inventory_page'),
+       [('Item',''),('Amount','num'),('Unit',''),('Status',''),('',''),('','')], items, 'items', '') %}
+    {% for it in items %}
+    <tr data-row>
+      <td>{{ it.name }}</td>
+      {{ value_cell(it.id, it.quantity) }}
+      <td>{{ it.unit }}</td>
+      <td><span class="status {{ 'low' if it.low else 'ok' }}">● {{ 'LOW' if it.low else 'OK' }}</span></td>
+      <td class="unsaved-cell"></td>
+      <td class="row-action"><button class="link-btn" form="disc-{{ it.id }}">Discontinue</button></td>
+    </tr>
+    {% endfor %}
+  {% endcall %}
+  {% for it in items %}
+  <form id="disc-{{ it.id }}" method="post" hidden
+        action="{{ url_for('inventory_discontinue', item_id=it.id) }}"
+        data-confirm='Discontinue "{{ it.name }}" from inventory?'>
+    <input type="hidden" name="name" value="{{ it.name }}">
+  </form>
+  {% endfor %}
+</div>
+{% endblock %}

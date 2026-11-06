@@ -1,0 +1,28 @@
+{# Shared editable table: Save/Refresh, unsaved highlighting (port of TablePage/TableEdit). #}
+{% macro editable_table(action, columns, rows, noun, prefix, confirm_save=None) %}
+<form id="edit-form" method="post" action="{{ action }}" data-editable data-noun="{{ noun }}"
+      {% if confirm_save %}data-confirm-save="{{ confirm_save }}"{% endif %}>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr>{% for c in columns %}<th class="{{ c[1] }}">{{ c[0] }}</th>{% endfor %}</tr></thead>
+      <tbody>{{ caller() }}</tbody>
+    </table>
+  </div>
+  <div class="page-bottom">
+    <span class="unsaved-label muted">{{ rows|length }} {{ noun }}</span>
+    <div class="actions">
+      <a class="btn btn-secondary" href="{{ action }}">Refresh</a>
+      <button class="btn btn-primary">Save Changes</button>
+    </div>
+  </div>
+</form>
+{% endmacro %}
+
+{% macro value_cell(item_id, value, prefix='') %}
+<td class="num">
+  <span class="prefix">{{ prefix }}</span>
+  <input class="cell-input" type="number" name="value_{{ item_id }}" value="{{ '%.2f'|format(value) }}"
+         min="0" step="0.01" required>
+  <input type="hidden" name="orig_{{ item_id }}" value="{{ '%.2f'|format(value) }}">
+</td>
+{% endmacro %}
