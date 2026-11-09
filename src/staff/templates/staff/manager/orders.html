@@ -1,0 +1,37 @@
+{% extends "staff/manager/base.html" %}
+{% block content %}
+<div class="page">
+  <div class="page-top">
+    <div>
+      <h2>Order History</h2>
+      <p class="muted small">Today's orders. Click an order to view its items.</p>
+    </div>
+    <div class="actions"><a class="btn btn-secondary" href="{{ url_for('staff.orders_page') }}">Refresh</a></div>
+  </div>
+  <div class="table-wrap">
+    <table class="table clickable">
+      <thead><tr><th>Order ID</th><th>Time</th><th class="num">Total</th></tr></thead>
+      <tbody>
+        {% for o in orders or [] %}
+        <tr data-order="{{ o.id }}" tabindex="0"><td>{{ o.id }}</td><td>{{ o.time_made }}</td><td class="num">{{ o.total | money }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="muted small">
+    {% if orders is none %}Unable to load today's orders. Click Refresh to try again.
+    {% elif not orders %}No orders today.{% else %}{{ orders|length }} orders today{% endif %}
+  </p>
+</div>
+<dialog id="order-dialog" class="card">
+  <h2 id="order-title"></h2>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Item</th><th class="num">Quantity</th><th>Selections per meal</th></tr></thead>
+      <tbody id="order-items"></tbody>
+    </table>
+  </div>
+  <p id="order-empty" class="muted small" hidden>No items found for this order.</p>
+  <form method="dialog" class="actions"><button class="btn btn-primary">Close</button></form>
+</dialog>
+{% endblock %}

@@ -29,3 +29,30 @@ Adding customer logins gives us the opportunity to reward repeat business. Rewar
 - **Database:** Neon
 - **Hosting service:** Vercel
 - **Authentication:** Google OAuth2
+
+## Web app (customer, cashier, manager)
+
+One Flask app serves all three interfaces:
+
+| URL | Interface | Code |
+|-----|-----------|------|
+| `/` | Customer ordering: photo menu, meal builder, cart, guest or Google login | [`src/customer`](src/customer/README.md) |
+| `/staff` | Staff mode select | [`src/staff`](src/staff) |
+| `/cashier` | Cashier POS: meals, drink sizes, duplicate/edit ticket lines, checkout | `src/staff` |
+| `/manager/...` | Manager (PIN): inventory, menu prices, order history, reports | `src/staff` |
+
+Run from the repository root:
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+cp .env.example .env   # then fill in the Neon dev settings, CUSTOMER_SECRET_KEY and MANAGER_PIN
+.venv/bin/flask --app src.app run
+```
+
+Open http://127.0.0.1:5000 (customer) or http://127.0.0.1:5000/staff (cashier/manager). Both database migrations must be applied to the branch you point at: `src/customer/migrations/001_customer_ordering.sql` and `src/team-3-project-1/migrations/001_inventory_unit_costs.sql` (the profit columns need `Inventory.UnitCost`).
+
+The cashier and manager pages are a Flask port of the Java Swing GUI in `src/team-3-project-1/gui`, using the same tables and the same checkout locking, so the Java app, the web cashier, and customer web orders can run against one database at the same time.
+
+Tests (disposable database only): `CUSTOMER_TEST_DATABASE_URL=postgresql://... .venv/bin/python -m pytest src -q`
+

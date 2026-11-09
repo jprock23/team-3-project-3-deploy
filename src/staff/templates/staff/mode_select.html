@@ -1,0 +1,17 @@
+{% extends "staff/base.html" %}
+{% block title %}Panda Express - Select Mode{% endblock %}
+{% block body_class %}centered{% endblock %}
+{% block content %}
+<div class="card mode-card">
+  <header class="brand">
+    <h1>PANDA EXPRESS</h1>
+    <p>Point of Sale</p>
+  </header>
+  <div class="mode-body">
+    <h2>Select a mode</h2>
+    <a class="btn btn-primary btn-big" href="{{ url_for('staff.cashier') }}">Cashier</a>
+    <a class="btn btn-secondary btn-big" href="{{ url_for('staff.manager_login') }}">Manager</a>
+    <a class="btn btn-light btn-big" href="{{ url_for('customer.index') }}">Customer ordering</a>
+  </div>
+</div>
+{% endblock %}

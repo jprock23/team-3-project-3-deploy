@@ -1,0 +1,19 @@
+{% extends "staff/manager/base.html" %}
+{% block content %}
+<form class="card dialog" method="post">
+  <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+  <h2>Add Inventory Item</h2>
+  <div class="form-grid">
+    <label for="name">Item name</label><input class="field" id="name" name="name" maxlength="100" value="{{ form.name }}" autofocus>
+    <label for="unit">Unit</label><input class="field" id="unit" name="unit" maxlength="20" value="{{ form.unit }}">
+    <label for="threshold">Minimum threshold</label><input class="field" id="threshold" name="threshold" type="number" min="0" step="any" value="{{ form.threshold }}">
+    <label for="quantity">Starting quantity</label><input class="field" id="quantity" name="quantity" type="number" min="0" step="any" value="{{ form.quantity }}">
+    <label for="shelf_life">Shelf life (days)</label><input class="field" id="shelf_life" name="shelf_life" type="number" min="0" step="1" value="{{ form.shelf_life }}">
+  </div>
+  <p class="error">{{ error or '' }}</p>
+  <div class="actions">
+    <a class="btn btn-secondary" href="{{ url_for('staff.inventory_page') }}">Cancel</a>
+    <button class="btn btn-primary">Add Item</button>
+  </div>
+</form>
+{% endblock %}

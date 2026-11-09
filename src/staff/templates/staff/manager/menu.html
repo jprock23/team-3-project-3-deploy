@@ -1,0 +1,34 @@
+{% extends "staff/manager/base.html" %}
+{% from "staff/manager/_editable.html" import editable_table, value_cell with context %}
+{% block content %}
+<div class="page">
+  <div class="page-top">
+    <div>
+      <h2>Menu Prices</h2>
+      <p class="muted small">New prices apply to future orders only. Past orders keep the totals they were charged.</p>
+    </div>
+    <div class="actions">
+      <a class="btn btn-secondary" href="{{ url_for('staff.menu_add') }}">+ Add Item</a>
+    </div>
+  </div>
+  {% call editable_table(url_for('staff.menu_page'), [('Menu Item',''),('Price','num'),('',''),('','')],
+       items, 'menu items', '$', 'Update {n} price(s)? New prices apply to future orders only.') %}
+    {% for it in items %}
+    <tr data-row>
+      <td>{{ it.name }}</td>
+      {{ value_cell(it.id, it.price, '$') }}
+      <td class="unsaved-cell"></td>
+      <td class="row-action"><button class="link-btn" form="disc-{{ it.id }}">Discontinue</button></td>
+    </tr>
+    {% endfor %}
+  {% endcall %}
+  {% for it in items %}
+  <form id="disc-{{ it.id }}" method="post" hidden
+        action="{{ url_for('staff.menu_discontinue', item_id=it.id) }}"
+        data-confirm='Discontinue "{{ it.name }}"?'>
+  <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+    <input type="hidden" name="name" value="{{ it.name }}">
+  </form>
+  {% endfor %}
+</div>
+{% endblock %}

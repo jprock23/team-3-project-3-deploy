@@ -1,0 +1,13 @@
+{% extends "staff/base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block body_class %}centered{% endblock %}
+{% block content %}
+<div class="card dialog">
+  <h1 class="dialog-title">{{ title }}</h1>
+  <p class="muted">{{ message }}</p>
+  <div class="actions">
+    <a class="btn btn-secondary" href="{{ url_for('staff.mode_select') }}">Staff home</a>
+    <a class="btn btn-primary" href="{{ request.path }}">Retry</a>
+  </div>
+</div>
+{% endblock %}

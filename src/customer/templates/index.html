@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf }}">
+  <title>Order your favorites | Panda Express</title>
+  <link rel="stylesheet" href="{{ url_for('.static', filename='customer.css') }}">
+  <script src="{{ url_for('.static', filename='customer.js') }}" defer></script>
+</head>
+<body>
+  <a class="skip" href="#menu">Skip to menu</a>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Panda Express home"><span class="brand-mark" aria-hidden="true">熊猫</span><span>PANDA EXPRESS<small>CHINESE KITCHEN</small></span></a>
+    <div class="account"><span id="identity">Welcome to Panda</span><button id="history-button" class="outline" hidden>Previous orders</button><button id="account-button" class="outline">Log in</button></div>
+  </header>
+  <main>
+    <section class="hero" aria-labelledby="page-title">
+      <div><p class="eyebrow">YOUR FAVORITES, YOUR WAY</p><h1 id="page-title">A little wok.<br>A lot of flavor.</h1><p>Build your perfect meal, find a new favorite,<br class="desktop-break"> and make today a Panda day.</p><a class="button" href="#menu">Explore the menu <span aria-hidden="true">↓</span></a></div>
+      <img src="{{ url_for('.image', filename='PLATE.png') }}" alt="A Panda plate with chow mein, fried rice, broccoli beef, and teriyaki chicken">
+    </section>
+    <div class="ordering-layout">
+      <section id="menu" aria-labelledby="menu-title">
+        <div class="section-heading"><div><p class="eyebrow">FRESH FROM THE WOK</p><h2 id="menu-title">What sounds good?</h2></div><label class="search"><span class="sr-only">Search the menu</span><input id="search" type="search" placeholder="Search your favorites"></label></div>
+        <nav id="categories" class="categories" aria-label="Menu categories"></nav>
+        <div id="menu-status" role="status">Loading the menu…</div>
+        <button id="retry-menu" class="outline" hidden>Try loading again</button>
+        <div id="menu-grid" class="menu-grid"></div>
+      </section>
+      <aside class="cart" aria-labelledby="cart-title">
+        <div class="cart-heading"><h2 id="cart-title">Your order</h2><span id="cart-count">0 items</span></div>
+        <p class="muted">Made just the way you like it.</p>
+        <div id="cart-lines"></div>
+        <div id="cart-totals" hidden><div><span>Subtotal</span><span id="subtotal"></span></div><div><span>Tax (8.25%)</span><span id="tax"></span></div><div class="total"><strong>Total</strong><strong id="total"></strong></div></div>
+        <p id="cart-status" role="status" class="muted"></p>
+        <button id="review-order" class="button wide" disabled>Review order</button>
+        <p class="cart-note">Place your order here. Pay at the counter.</p>
+      </aside>
+    </div>
+  </main>
+  <footer>PANDA EXPRESS <span>Good food. Good company.</span> <a class="staff-link" href="{{ url_for('staff.mode_select') }}">Staff</a></footer>
+
+  <dialog id="history-dialog" aria-labelledby="history-title">
+    <button class="close" data-close="history-dialog" aria-label="Close previous orders">×</button>
+    <h2 id="history-title">Previous orders</h2>
+    <p>Orders from the past month. Reorders use current prices and availability and are added to your cart for review.</p>
+    <p id="history-status" role="status"></p>
+    <button id="retry-history" class="outline" hidden>Try again</button>
+    <div id="history-orders"></div>
+  </dialog>
+  <dialog id="welcome" aria-labelledby="welcome-title">
+    <button class="close" data-close="welcome" aria-label="Close sign in">×</button>
+    <p class="eyebrow">WELCOME TO YOUR PANDA</p><h2 id="welcome-title">How would you<br>like to order?</h2>
+    <p>Log in or create an account with Google to see your previous orders and order them again. Your first Google sign-in creates your account.</p>
+    {% if google_enabled %}<a href="{{ url_for('.login') }}" class="button wide">Continue with Google</a>{% else %}<p class="notice">Account login is being set up. You can still order as a guest.</p>{% endif %}
+    <button id="continue-guest" class="outline wide">Continue as guest</button>
+    <p id="login-status" role="status"></p>
+  </dialog>
+  <dialog id="meal-dialog" aria-labelledby="meal-title"><button class="close" data-close="meal-dialog" aria-label="Close meal builder">×</button><p class="eyebrow">MAKE IT YOURS</p><h2 id="meal-title">Build your meal</h2><form id="meal-form"><div id="meal-choices"></div><button class="button wide" type="submit">Add meal to order</button></form></dialog>
+  <dialog id="checkout-dialog" aria-labelledby="checkout-title"><button class="close" data-close="checkout-dialog" aria-label="Close order review">×</button><p class="eyebrow">ONE LAST LOOK</p><h2 id="checkout-title">Looking delicious.</h2><div id="checkout-summary"></div><p>Your order will be sent to the restaurant. Payment is collected at the counter.</p><p id="checkout-status" role="status"></p><button id="place-order" class="button wide">Place order</button></dialog>
+  <dialog id="receipt-dialog" aria-labelledby="receipt-title"><p class="eyebrow">THANK YOU FOR ORDERING</p><h2 id="receipt-title">You're all set!</h2><p id="receipt-message"></p><button class="button wide" data-close="receipt-dialog">Back to menu</button></dialog>
+</body>
+</html>

@@ -1,0 +1,26 @@
+{% extends "staff/manager/base.html" %}
+{% block content %}
+<form class="card dialog" method="post" id="reactivate-form">
+  <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+  <h2>Reactivate Inventory Item</h2>
+  <div class="form-grid">
+    <label for="item_id">Discontinued item</label>
+    <select class="field" id="item_id" name="item_id">
+      {% for it in items %}
+      <option value="{{ it.id }}" data-unit="{{ it.unit }}" data-threshold="{{ '%.2f'|format(it.threshold) }}"
+              data-shelf="{{ it.shelf_life_days }}" {{ 'selected' if form.item_id == it.id|string }}>{{ it.name }}</option>
+      {% endfor %}
+    </select>
+    <span class="label">Unit</span><span id="r-unit"></span>
+    <span class="label">Minimum threshold</span><span id="r-threshold"></span>
+    <span class="label">Shelf life</span><span id="r-shelf"></span>
+    <label for="quantity">Starting quantity</label>
+    <input class="field" id="quantity" name="quantity" type="number" min="0" step="any" value="{{ form.quantity }}">
+  </div>
+  <p class="error">{{ error or '' }}</p>
+  <div class="actions">
+    <a class="btn btn-secondary" href="{{ url_for('staff.inventory_page') }}">Cancel</a>
+    <button class="btn btn-primary">Reactivate Item</button>
+  </div>
+</form>
+{% endblock %}

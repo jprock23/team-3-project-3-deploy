@@ -129,7 +129,7 @@ string classifyItem(const string &originalName) {
     if (name.find("HI-C") != string::npos || name.find("COCA-COLA") != string::npos ||
         name.find("COKE") != string::npos || name.find("SPRITE") != string::npos ||
         name.find("FANTA") != string::npos || name.find("DR PEPPER") != string::npos ||
-        name.find("ROOT BEER") != string::npos || name.find("TEA") != string::npos ||
+        name.find("ROOT BEER") != string::npos || (" " + name + " ").find(" TEA ") != string::npos ||
         name.find("LEMONADE") != string::npos || name.find("POWERADE") != string::npos ||
         name.find("GINGER ALE") != string::npos || name.find("VITAMINWATER") != string::npos ||
         name.find("REFRESHER") != string::npos)

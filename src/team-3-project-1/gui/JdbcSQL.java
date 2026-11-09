@@ -18,7 +18,7 @@ public class JdbcSQL {
    */
   public static void openConnection(DbSetup credentials) {
     try {
-      conn = DriverManager.getConnection("jdbc:postgresql://csce-315-db.engr.tamu.edu/team3db",
+      conn = DriverManager.getConnection(credentials.URL,
         credentials.USER, credentials.PASSWORD);
     } catch (Exception e) {
       e.printStackTrace();

@@ -13,12 +13,12 @@ import java.util.Map;
 /**
  * Manager window: Inventory (edit amounts, add, discontinue, and reactivate items),
  * Menu (edit prices, add, and discontinue items),
- * Order History (today's orders and item quantities),
- * Reports, and a Schedule placeholder.
+ * Order History (today's orders and item quantities), and
+ * Reports (sales, daily profit margin, usage, restock, X-report).
  * LOW = Quantity &lt;= Minimum_Threshold.
  */
 public class ManagerGUI {
-  static final String[] PAGES = {"Inventory", "Menu", "Order History", "Reports", "Schedule"};
+  static final String[] PAGES = {"Inventory", "Menu", "Order History", "Reports"};
 
   JFrame frame;
   final Connection db;
@@ -74,7 +74,6 @@ public class ManagerGUI {
     orderHistory = new OrderHistoryPage(frame, db);
     pages.add(orderHistory.panel, "Order History");
     pages.add(new ReportWithFourQuads(conn).panel, "Reports");
-    pages.add(placeholder("Employee schedule"), "Schedule");
 
     JPanel root = new JPanel(new BorderLayout());
     root.setBackground(PandaTheme.WHITE);
@@ -89,7 +88,7 @@ public class ManagerGUI {
   }
 
   /**
-   * Nav bar: Inventory | Menu | Order History | Reports | Schedule ... Switch Mode.
+   * Nav bar: Inventory | Menu | Order History | Reports ... Switch Mode.
    *
    * @return the nav bar panel
    */
@@ -162,20 +161,6 @@ public class ManagerGUI {
     }
     frame.dispose();
     new ModeSelect(db).build();
-  }
-
-  /**
-   * Creates a placeholder panel with a title.
-   *
-   * @param title heading text
-   * @return the placeholder panel
-   */
-  JPanel placeholder(String title) {
-    JPanel p = new JPanel(new BorderLayout());
-    p.setBackground(PandaTheme.WHITE);
-    p.setBorder(new EmptyBorder(16, 20, 16, 20));
-    p.add(PandaTheme.label(title, PandaTheme.HEADING, PandaTheme.BLACK), BorderLayout.NORTH);
-    return p;
   }
 
   /**

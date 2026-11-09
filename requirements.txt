@@ -1,0 +1,2 @@
+# Combined web app (customer ordering + cashier + manager)
+-r src/customer/requirements.txt

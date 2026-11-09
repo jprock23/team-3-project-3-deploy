@@ -1,0 +1,80 @@
+{% extends "staff/manager/base.html" %}
+{% macro range_form(prefix, r, kind='datetime-local') %}
+<form class="controls" method="get">
+  {# keep the other reports' ranges when re-running this one #}
+  {% for k, v in request.args.items() if not k.startswith(prefix ~ '_') %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
+  <label>From <input class="field" type="{{ kind }}" name="{{ prefix }}_from" value="{{ r.from }}"></label>
+  <label>To <input class="field" type="{{ kind }}" name="{{ prefix }}_to" value="{{ r.to }}"></label>
+  <button class="btn btn-secondary">Run</button>
+</form>
+{% endmacro %}
+{% block content %}
+<div class="page">
+  <h1 class="page-title">Reports</h1>
+  <div class="quads">
+    <section class="quad" aria-labelledby="sales-title">
+      <h2 id="sales-title">Sales Report</h2>
+      {{ range_form('sales', sales) }}
+      <p class="status-line" role="status">
+        {% if sales.error %}{{ sales.error }}{% else %}
+        {{ sales.rows | sum(attribute='qty') | int }} items (including meal selections),
+        {{ sales.rows | sum(attribute='revenue') | money }} revenue,
+        {{ sales.rows | sum(attribute='profit') | money }} est. profit{% endif %}
+      </p>
+      <div class="table-wrap"><table class="table">
+        <thead><tr><th>Item</th><th class="num">Qty Sold</th><th class="num">Revenue</th><th class="num">Est. Profit</th><th class="num">Margin</th></tr></thead>
+        <tbody>{% for r in sales.rows %}<tr><td>{{ r.name }}</td><td class="num">{{ r.qty|int }}</td><td class="num">{{ r.revenue | money }}</td><td class="num">{{ r.profit | money }}</td><td class="num">{{ r.margin | pct }}</td></tr>{% endfor %}</tbody>
+      </table></div>
+    </section>
+
+    <section class="quad" aria-labelledby="margin-title">
+      <h2 id="margin-title">Daily Sales &amp; Profit Margin</h2>
+      {{ range_form('margin', margin, 'date') }}
+      <p class="status-line" role="status">
+        {% if margin.error %}{{ margin.error }}{% else %}
+        {{ margin.rows | length }} days, {{ margin.rows | sum(attribute='revenue') | money }} revenue,
+        {{ margin.rows | sum(attribute='profit') | money }} estimated profit{% endif %}
+      </p>
+      <div class="table-wrap"><table class="table">
+        <thead><tr><th>Date</th><th class="num">Revenue</th><th class="num">Est. Cost</th><th class="num">Est. Profit</th><th class="num">Margin</th></tr></thead>
+        <tbody>{% for r in margin.rows %}<tr><td>{{ r.day }}</td><td class="num">{{ r.revenue | money }}</td><td class="num">{{ r.cost | money }}</td><td class="num">{{ r.profit | money }}</td><td class="num">{{ r.margin | pct }}</td></tr>{% endfor %}</tbody>
+      </table></div>
+    </section>
+
+    <section class="quad" aria-labelledby="usage-title">
+      <h2 id="usage-title">Usage Report</h2>
+      {{ range_form('usage', usage) }}
+      <p class="status-line" role="status">{{ usage.error or (usage.rows|length ~ ' inventory items used') }}</p>
+      <div class="table-wrap"><table class="table">
+        <thead><tr><th>Item</th><th>Unit</th><th class="num">Amount Used</th></tr></thead>
+        <tbody>{% for r in usage.rows %}<tr><td>{{ r.name }}</td><td>{{ r.unit }}</td><td class="num">{{ r.used | num }}</td></tr>{% endfor %}</tbody>
+      </table></div>
+    </section>
+
+    <section class="quad" aria-labelledby="restock-title">
+      <h2 id="restock-title">Restock Report</h2>
+      <div class="controls"><a class="btn btn-secondary" href="{{ request.full_path }}">Run</a>
+        <span class="status-line" role="status">{{ restock.error or (restock.rows|length ~ ' items need restocking') }}</span></div>
+      <div class="table-wrap"><table class="table">
+        <thead><tr><th>Item</th><th class="num">Amount</th><th class="num">Minimum</th><th>Unit</th></tr></thead>
+        <tbody>{% for r in restock.rows %}<tr><td>{{ r.name }}</td><td class="num">{{ r.quantity|num }}</td><td class="num">{{ r.threshold|num }}</td><td>{{ r.unit }}</td></tr>{% endfor %}</tbody>
+      </table></div>
+    </section>
+
+    <section class="quad" aria-labelledby="x-title">
+      <h2 id="x-title">X-Report (Today)</h2>
+      <div class="controls"><a class="btn btn-secondary" href="{{ request.full_path }}">Run</a>
+        <span class="status-line" role="status">{{ xreport.error or ("Today's Sales: " ~ (xreport.total | money)) }}</span></div>
+      {{ xreport.chart or '' }}
+    </section>
+
+    <section class="quad notes" aria-labelledby="notes-title">
+      <h2 id="notes-title">Notes</h2>
+      <p>Every report refreshes with its Run button.</p>
+      <p>Restock lists active items at or below their minimum threshold.</p>
+      <p>Profit margin uses the estimated ingredient unit costs in <code>Inventory.UnitCost</code>
+        (see <code>migrations/001_inventory_unit_costs.sql</code>), so treat it as an estimate until real costs are entered.</p>
+    </section>
+  </div>
+</div>
+{% endblock %}

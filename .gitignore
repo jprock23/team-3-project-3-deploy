@@ -1,0 +1,16 @@
+# Secrets: database credentials and other environment config
+.env
+.env.*
+!.env.example
+
+# Database dumps
+*.dump
+*_dump.sql
+
+# Java build output
+*.class
+
+# Python local environments and generated caches
+__pycache__/
+.pytest_cache/
+.venv/

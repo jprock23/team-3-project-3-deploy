@@ -1,0 +1,1 @@
+"""Customer ordering application."""

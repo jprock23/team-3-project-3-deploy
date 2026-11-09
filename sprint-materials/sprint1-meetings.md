@@ -15,40 +15,29 @@
 
 ## Meeting 1 — Sprint Planning
 
-- **Date/time:** YYYY-MM-DD, HH:MM
-- **Attendees:**
-- **Absent:**
+- **Date/time:** 2026-11-03,
+- **Attendees:** Max, Vishanth, JP, Madelyn, Shakir
+- **Absent:** Null
 
-**Sprint goal confirmation**
-- [ ] Sprint goal in sprint-goals.md confirmed (updated if needed):
-- [ ] Sprint user story points reviewed — total planned points:
 
-**Definition of Done agreed on by the team:**
-1.
-2.
-3.
-
-**Decisions made:**
--
+**Decisions made and progress:**
+- decided on using neon for db, backend working on migrating database to Neon, frontend working on aggregating menu item photos
 
 **Blockers raised:**
-- None /
+- Lots of exams this week so most work to be done in class
 
 ---
 
 ## Meeting 2 — Daily Scrum (Stand-up)
 
-- **Date/time:** YYYY-MM-DD, HH:MM
-- **Attendees:**
-- **Absent:**
+- **Date/time:** 2026-11-04
+- **Attendees:** Max, Vishanth, JP, Madelyn, Shakir
+- **Absent:** null
 
 **Progress since last meeting:**
+still working on db, oath almost working
+porting code so as to maintain older functionality 
 -
-
-**Blockers raised:**
-- None /
-
-**Decisions made:**
 -
 
 ---

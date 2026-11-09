@@ -193,7 +193,8 @@ from `gui/` because both directories contain a default-package `DbSetup` class.
 | `gui/PandaTheme.java` | Shared colors, fonts, controls, and cell renderers. |
 | `gui/OrderHistoryDAO.java` | Today's orders, item quantities, and meal-selection queries. |
 | `gui/OrderHistoryPage.java` | Order history table and item-details popup. |
-| `gui/ReportWithFourQuads.java` | Sales, ingredient usage, restock, and daily X reports. |
+| `gui/ReportWithFourQuads.java` | Sales, daily profit margin, ingredient usage, restock, and daily X reports. |
+| `migrations/001_inventory_unit_costs.sql` | Estimated inventory unit costs for the profit margin report; apply to the dev database before running the GUI. |
 | `gui/BarGraph.java` | Reusable bar chart panel. |
 | `gui/LineGraph.java` | Reusable line chart panel. |
 | `gui/XReportGraph.java` | Hourly sales chart for the daily X report. |

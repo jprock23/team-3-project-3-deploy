@@ -83,7 +83,7 @@ public class CashierGUI {
    */
   static void openConnection(DbSetup credentials) {
     try {
-      conn = DriverManager.getConnection("jdbc:postgresql://csce-315-db.engr.tamu.edu/team3db",
+      conn = DriverManager.getConnection(credentials.URL,
         credentials.USER, credentials.PASSWORD);
     } catch (Exception e) {
       e.printStackTrace();
@@ -454,7 +454,8 @@ public class CashierGUI {
   // ---- Right: order ticket ----
 
   /**
-   * Builds the order ticket: line list, remove button, totals, and Checkout.
+   * Builds the order ticket: line list, remove/duplicate/edit buttons, totals,
+   * and Checkout.
    *
    * @return the ticket panel
    */
@@ -480,8 +481,7 @@ public class CashierGUI {
     bottom.setLayout(new BoxLayout(bottom, BoxLayout.Y_AXIS));
     bottom.setOpaque(false);
 
-    JButton remove = PandaTheme.secondaryButton("Remove Selected");
-    remove.setAlignmentX(Component.CENTER_ALIGNMENT);
+    JButton remove = PandaTheme.secondaryButton("Remove");
     remove.addActionListener(new ActionListener() {
       /** Handles this control's user action. */
       public void actionPerformed(ActionEvent e) {
@@ -498,6 +498,29 @@ public class CashierGUI {
         }
       }
     });
+
+    JButton duplicate = PandaTheme.secondaryButton("Duplicate");
+    duplicate.addActionListener(new ActionListener() {
+      /** Handles this control's user action. */
+      public void actionPerformed(ActionEvent e) {
+        duplicateSelected(list);
+      }
+    });
+
+    JButton editMeal = PandaTheme.secondaryButton("Edit Meal");
+    editMeal.addActionListener(new ActionListener() {
+      /** Handles this control's user action. */
+      public void actionPerformed(ActionEvent e) {
+        editSelectedMeal(list);
+      }
+    });
+
+    JPanel actions = new JPanel(new GridLayout(1, 3, 6, 0));
+    actions.setOpaque(false);
+    actions.setAlignmentX(Component.CENTER_ALIGNMENT);
+    actions.add(remove);
+    actions.add(duplicate);
+    actions.add(editMeal);
 
     JPanel sums = new JPanel(new GridLayout(3, 1));
     sums.setOpaque(false);
@@ -519,7 +542,7 @@ public class CashierGUI {
       }
     });
 
-    bottom.add(remove);
+    bottom.add(actions);
     bottom.add(Box.createVerticalStrut(8));
     bottom.add(sums);
     bottom.add(Box.createVerticalStrut(8));
@@ -614,6 +637,301 @@ public class CashierGUI {
     ids.add((Integer) line[3]);
     ids.addAll((List<Integer>) line[4]);
     return ids;
+  }
+
+  /**
+   * Duplicates the selected ticket line as a new line with the same item,
+   * meal selections, and unit price. Stock is re-validated for the copy.
+   *
+   * @param list the ticket's line list
+   */
+  void duplicateSelected(JList<String> list) {
+    int idx = list.getSelectedIndex();
+    if (idx < 0) {
+      JOptionPane.showMessageDialog(frame, "Select an item in the ticket to duplicate.");
+      return;
+    }
+    int id = (Integer) orderLines.keySet().toArray()[idx];
+    Object[] line = orderLines.get(id);
+    Object[] copy = duplicateLine(line);
+    int key = ++nextLineId;
+    orderLines.put(key, copy);
+    try {
+      validateCart();
+    } catch (SQLException ex) {
+      orderLines.remove(key);
+      JOptionPane.showMessageDialog(
+        frame, ex.getMessage(), "Cannot duplicate item", JOptionPane.ERROR_MESSAGE);
+      return;
+    }
+    refreshTicket();
+    list.setSelectedIndex(orderLines.size() - 1);
+  }
+
+  /**
+   * Returns an independent copy of a ticket line with quantity one.
+   *
+   * @param line a ticket line from {@link #orderLines}
+   * @return a new line with the same description, price, item, and selections
+   */
+  @SuppressWarnings("unchecked")
+  Object[] duplicateLine(Object[] line) {
+    return new Object[] {line[0], line[1], 1, line[3],
+      new ArrayList<Integer>((List<Integer>) line[4])};
+  }
+
+  /**
+   * Opens the meal editor for the selected ticket line.
+   *
+   * @param list the ticket's line list
+   */
+  void editSelectedMeal(JList<String> list) {
+    int idx = list.getSelectedIndex();
+    if (idx < 0) {
+      JOptionPane.showMessageDialog(frame, "Select a bowl or plate in the ticket to edit.");
+      return;
+    }
+    int key = (Integer) orderLines.keySet().toArray()[idx];
+    try {
+      editMeal(orderLines.get(key));
+    } catch (SQLException ex) {
+      JOptionPane.showMessageDialog(
+        frame, ex.getMessage(), "Cannot edit meal", JOptionPane.ERROR_MESSAGE);
+    }
+  }
+
+  /**
+   * Edits a bowl/plate line in place: components can be removed down to one
+   * side and one entree, and extra sides/entrees can be added at their
+   * standalone prices. The line's price and description update immediately,
+   * and checkout stores every selected component in OrderItemSelection.
+   *
+   * @param line a ticket line from {@link #orderLines}
+   * @throws SQLException if the meal or its options cannot be loaded, or the
+   *         edited meal cannot be fulfilled from stock
+   */
+  @SuppressWarnings("unchecked")
+  void editMeal(Object[] line) throws SQLException {
+    final List<Integer> selections = (List<Integer>) line[4];
+    if (selections.isEmpty()) {
+      throw new SQLException("That line is not a bowl or plate. Select a meal to edit.");
+    }
+    final int mealId = (Integer) line[3];
+    final String mealName;
+    final int entreeCount;
+    final double basePrice;
+    try (PreparedStatement ps = conn.prepareStatement(
+           "SELECT MenuItemName, EntreeCount, Price FROM MenuItem "
+           + "WHERE MenuItemID = ? AND Active = TRUE")) {
+      ps.setInt(1, mealId);
+      try (ResultSet rs = ps.executeQuery()) {
+        if (!rs.next())
+          throw new SQLException("This meal is no longer available.");
+        mealName = rs.getString(1);
+        entreeCount = rs.getInt(2);
+        basePrice = rs.getDouble(3);
+      }
+    }
+
+    // Every active side and entree, for naming components and pricing extras.
+    final Map<Integer, String> names = new LinkedHashMap<Integer, String>();
+    final Map<Integer, Double> prices = new LinkedHashMap<Integer, Double>();
+    final Map<Integer, String> kinds = new LinkedHashMap<Integer, String>();
+    final Map<String, List<Integer>> options = new LinkedHashMap<String, List<Integer>>();
+    for (String category : new String[] {"Sides", "Entrees"}) {
+      List<Integer> ids = new ArrayList<Integer>();
+      try (PreparedStatement ps = conn.prepareStatement(
+             "SELECT MenuItemID, MenuItemName, Price FROM MenuItem WHERE Category = ? "
+             + "AND Active = TRUE AND MenuItemName NOT LIKE '%SOUP%' ORDER BY MenuItemName")) {
+        ps.setString(1, category);
+        try (ResultSet rs = ps.executeQuery()) {
+          while (rs.next()) {
+            int id = rs.getInt(1);
+            ids.add(id);
+            names.put(id, rs.getString(2));
+            prices.put(id, rs.getDouble(3));
+            kinds.put(id, category);
+          }
+        }
+      }
+      options.put(category, ids);
+    }
+
+    final List<Integer> edited = new ArrayList<Integer>(selections);
+    final JDialog dialog = new JDialog(frame, mealName + " - Edit Meal", true);
+    final DefaultListModel<String> compModel = new DefaultListModel<String>();
+    final JList<String> compList = new JList<String>(compModel);
+    compList.setFont(PandaTheme.BODY);
+    final JLabel priceLabel = PandaTheme.label("", PandaTheme.BOLD, PandaTheme.BLACK);
+
+    final Runnable redraw = new Runnable() {
+      /** Rebuilds the component list and live price after every edit. */
+      public void run() {
+        compModel.clear();
+        int freeSides = 1, freeEntrees = entreeCount;
+        for (int id : edited) {
+          boolean extra;
+          if ("Sides".equals(kinds.get(id))) {
+            extra = freeSides == 0;
+            if (!extra)
+              freeSides--;
+          } else {
+            extra = freeEntrees == 0;
+            if (!extra)
+              freeEntrees--;
+          }
+          compModel.addElement(names.get(id)
+            + (extra ? String.format("   +$%.2f", prices.get(id)) : ""));
+        }
+        priceLabel.setText(String.format("Meal price: $%.2f",
+          mealPrice(basePrice, entreeCount, edited, kinds, prices)));
+      }
+    };
+
+    JButton removeComp = PandaTheme.secondaryButton("Remove Component");
+    removeComp.addActionListener(new ActionListener() {
+      /** Handles this control's user action. */
+      public void actionPerformed(ActionEvent e) {
+        int i = compList.getSelectedIndex();
+        if (i < 0) {
+          JOptionPane.showMessageDialog(dialog, "Select a component to remove.");
+          return;
+        }
+        String kind = kinds.get(edited.get(i));
+        int kept = 0;
+        for (int id : edited)
+          if (kind.equals(kinds.get(id)))
+            kept++;
+        if (kept == 1) {
+          JOptionPane.showMessageDialog(dialog,
+            "A meal must keep at least one side and one entree.");
+          return;
+        }
+        edited.remove(i);
+        redraw.run();
+      }
+    });
+
+    JPanel addRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+    addRow.setOpaque(false);
+    for (final String category : new String[] {"Sides", "Entrees"}) {
+      final List<Integer> ids = options.get(category);
+      final JComboBox<String> picker = new JComboBox<String>();
+      for (int id : ids)
+        picker.addItem(names.get(id));
+      JButton add = PandaTheme.secondaryButton("+ " + category);
+      add.addActionListener(new ActionListener() {
+        /** Handles this control's user action. */
+        public void actionPerformed(ActionEvent e) {
+          edited.add(ids.get(picker.getSelectedIndex()));
+          redraw.run();
+        }
+      });
+      addRow.add(picker);
+      addRow.add(add);
+    }
+
+    JButton ok = PandaTheme.primaryButton("Save");
+    JButton cancel = PandaTheme.secondaryButton("Cancel");
+    cancel.addActionListener(new ActionListener() {
+      /** Handles this control's user action. */
+      public void actionPerformed(ActionEvent e) {
+        dialog.dispose();
+      }
+    });
+    ok.addActionListener(new ActionListener() {
+      /** Handles this control's user action. */
+      public void actionPerformed(ActionEvent e) {
+        String oldDesc = (String) line[0];
+        double oldPrice = (Double) line[1];
+        List<Integer> oldSelections = new ArrayList<Integer>(selections);
+        selections.clear();
+        selections.addAll(edited);
+        line[1] = mealPrice(basePrice, entreeCount, edited, kinds, prices);
+        StringBuilder desc = new StringBuilder(mealName);
+        for (int id : edited)
+          desc.append(" / ").append(names.get(id));
+        line[0] = desc.toString();
+        try {
+          validateCart();
+        } catch (SQLException ex) {
+          line[0] = oldDesc;
+          line[1] = oldPrice;
+          selections.clear();
+          selections.addAll(oldSelections);
+          JOptionPane.showMessageDialog(dialog, ex.getMessage(), "Cannot edit meal",
+            JOptionPane.ERROR_MESSAGE);
+          return;
+        }
+        refreshTicket();
+        dialog.dispose();
+      }
+    });
+
+    JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
+    buttons.setOpaque(false);
+    buttons.add(cancel);
+    buttons.add(ok);
+
+    JPanel south = new JPanel();
+    south.setLayout(new BoxLayout(south, BoxLayout.Y_AXIS));
+    south.setOpaque(false);
+    south.setBorder(new EmptyBorder(8, 0, 0, 0));
+    priceLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+    removeComp.setAlignmentX(Component.LEFT_ALIGNMENT);
+    addRow.setAlignmentX(Component.LEFT_ALIGNMENT);
+    buttons.setAlignmentX(Component.LEFT_ALIGNMENT);
+    south.add(priceLabel);
+    south.add(Box.createVerticalStrut(6));
+    south.add(removeComp);
+    south.add(Box.createVerticalStrut(6));
+    south.add(addRow);
+    south.add(Box.createVerticalStrut(6));
+    south.add(buttons);
+
+    JPanel content = new JPanel(new BorderLayout(0, 8));
+    content.setBackground(PandaTheme.WHITE);
+    content.setBorder(new EmptyBorder(12, 12, 12, 12));
+    JScrollPane compScroll = new JScrollPane(compList);
+    compScroll.setBorder(new LineBorder(PandaTheme.GRID, 1));
+    content.add(compScroll, BorderLayout.CENTER);
+    content.add(south, BorderLayout.SOUTH);
+    dialog.setContentPane(content);
+    dialog.setSize(420, 480);
+    dialog.setLocationRelativeTo(frame);
+    redraw.run();
+    dialog.setVisible(true);
+  }
+
+  /**
+   * Unit price of an edited meal: the base price covers one side and the
+   * included entrees; extra components are charged at their standalone prices.
+   *
+   * @param base the meal's menu price
+   * @param entreeCount entrees included in the base price
+   * @param comps selected component MenuItemIDs in display order
+   * @param kinds MenuItemID to category ("Sides" or "Entrees")
+   * @param prices MenuItemID to standalone price
+   * @return the meal's unit price
+   */
+  static double mealPrice(double base, int entreeCount, List<Integer> comps,
+    Map<Integer, String> kinds, Map<Integer, Double> prices) {
+    int freeSides = 1;
+    int freeEntrees = entreeCount;
+    double extra = 0;
+    for (int id : comps) {
+      if ("Sides".equals(kinds.get(id))) {
+        if (freeSides > 0) {
+          freeSides--;
+          continue;
+        }
+      } else if (freeEntrees > 0) {
+        freeEntrees--;
+        continue;
+      }
+      extra += prices.get(id);
+    }
+    return base + extra;
   }
 
   /**

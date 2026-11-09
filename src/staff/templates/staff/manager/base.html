@@ -1,0 +1,12 @@
+{% extends "staff/base.html" %}
+{% block title %}Panda Express - Manager{% endblock %}
+{% block nav %}
+<nav class="topnav" aria-label="Manager pages">
+  <div class="tabs">
+    {% for name, endpoint in [('Inventory','inventory_page'),('Menu','menu_page'),('Order History','orders_page'),('Reports','reports_page')] %}
+    <a class="tab {{ 'active' if page == name }}" href="{{ url_for('staff.' ~ endpoint) }}" {% if page == name %}aria-current="page"{% endif %}>{{ name }}</a>
+    {% endfor %}
+  </div>
+  <a class="btn btn-light" href="{{ url_for('staff.manager_logout') }}">Switch Mode</a>
+</nav>
+{% endblock %}

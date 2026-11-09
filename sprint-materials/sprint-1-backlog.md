@@ -53,16 +53,14 @@
 
 ---
 
-## Story 5 — Cashier Schedule View
-**As a** cashier, **I want** the ability to view my schedule **so that** I can plan around it and determine if I'm free.
+## Story 5 — Cashier Item Duplication
+**As a** cashier, **I want** the ability to duplicate specific items that are in the checkout menu.
 
 **Acceptance Criteria:**
-- Cashier can log in and view their assigned shifts
-- Schedule shows dates, start times, and end times for upcoming shifts
-- Schedule data is stored in and read from the database (schema change documented in CHANGELOG.md)
-- Only the logged-in cashier's own schedule is visible
+- Cashier can select items in the checkout menu
+- Cashier can duplicate selected items
 
-**Story Points:** 5 · **Sprint:** 1
+**Story Points:** 1 · **Sprint:** 1
 
 ---
 

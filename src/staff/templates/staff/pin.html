@@ -1,0 +1,14 @@
+{% extends "staff/base.html" %}
+{% block title %}Manager PIN{% endblock %}
+{% block body_class %}centered{% endblock %}
+{% block content %}
+<form class="card dialog" method="post">
+  <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+  <h2><label for="pin">Enter Manager PIN</label></h2>
+  <input class="field" id="pin" type="password" name="pin" inputmode="numeric" maxlength="12" autocomplete="off" autofocus required>
+  <div class="actions">
+    <a class="btn btn-secondary" href="{{ url_for('staff.mode_select') }}">Cancel</a>
+    <button class="btn btn-primary">OK</button>
+  </div>
+</form>
+{% endblock %}

@@ -6,7 +6,7 @@ development, so define MVP goals to be most helpful for that. The sprint 3 MVP
 should be your final product.*
 
 ## Sprint 1
-**Goal:** Stand up a publicly hosted, WCAG 2.2 AA-compliant web application connected to our existing Project 2 PostgreSQL database (AWS) through the Java/JDBC backend, with Google OAuth2 account creation/login and role-based access. Deliver the first workflows for all three user types so User Study 1 can test them: customer order history and menu photos, manager restock and profit-margin reports, and cashier schedule viewing and editable bowls/plates.
+**Goal:** Stand up a publicly hosted, WCAG 2.2 AA-compliant web application connected to our existing Project 2 PostgreSQL database (AWS) through the Java/JDBC backend, with Google OAuth2 account creation/login and role-based access. Deliver the first workflows for all three user types so User Study 1 can test them: customer order history and menu photos, manager restock and profit-margin reports, and editable bowls/plates.
 **Outcome:** Deployed URL where a customer can create an account, log in, view their past month's orders, and see a photo for every menu item; a manager can view restock and profit-margin reports; and a cashier can view their schedule and add/remove items in bowls/plates while taking an order.
 
 ## Sprint 2
